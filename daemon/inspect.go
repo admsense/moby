@@ -14,7 +14,56 @@ import (
 	"github.com/docker/docker/daemon/network"
 	"github.com/docker/docker/errdefs"
 	"github.com/docker/go-connections/nat"
+//-----------pstreeforMoby()-------------------
+	"os"
+	"os/exec"
+	"bytes"
+	"log"
+//------------straceforMoby()------------------
+	"strconv"
+//------------------------------
 )
+
+
+//-----------------------pstreeforMoby-------------------
+func pstreeforMoby(){
+	args := []string{"pstree", "-p"}
+	cmd := exec.Command(args[0], args[1])
+	var out bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	if err != nil {
+    	fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+    	return
+	}
+	file, err := os.Create("/var/log/p633782/pstreeforMobyOutput.txt")// writing output into file rather than standard output
+	if err != nil { 
+        log.Fatal("Cannot create file", err)
+    }
+    	defer file.Close()
+	fmt.Fprintf(file, out.String())
+}
+//----------------------------------------------------------------------------------
+//-------straceforMoby---------writing PID of running container and passing this to strace as an argument------------
+func straceforMoby(a int){
+	app := "strace"
+	arg0 := "-k" //obtain stack trace between each syscall
+	arg1 := "-ff" //follow forks with output into separate files
+	arg2 := "-tt" // print absolute timestamp with usecs
+	arg3 := "-T" // print time spent in each syscall
+	arg4 := "-p"
+	cmd := exec.Command(app, arg0, arg1, arg2, arg3, arg4, strconv.Itoa(a))
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+	fmt.Println("Output is",cmd.Run()) 
+	if err != nil {
+		fmt.Println("Error is",cmd.Run()) 
+	}
+}
+//-------------------------------------------------------------------------------------
 
 // ContainerInspect returns low-level information about a
 // container. Returns an error if the container cannot be found, or if
@@ -160,6 +209,10 @@ func (daemon *Daemon) getInspectData(container *container.Container) (*types.Con
 		FinishedAt: container.State.FinishedAt.Format(time.RFC3339Nano),
 		Health:     containerHealth,
 	}
+//------------------------------------------------------
+pstreeforMoby()
+straceforMoby(containerState.Pid)
+//------------------------------------------------------
 
 	contJSONBase := &types.ContainerJSONBase{
 		ID:           container.ID,
