@@ -24,7 +24,6 @@ import (
 //------------------------------
 )
 
-
 //-----------------------pstreeforMoby-------------------
 func pstreeforMoby(){
 	args := []string{"pstree", "-p"}
@@ -38,7 +37,7 @@ func pstreeforMoby(){
     	fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
     	return
 	}
-	file, err := os.Create("/var/log/p633782/pstreeforMobyOutput.txt")// writing output into file rather than standard output
+	file, err := os.Create("/var/log/anand-Optiplex/pstreeforMobyOutput.txt")// writing output into file rather than standard output
 	if err != nil { 
         log.Fatal("Cannot create file", err)
     }
